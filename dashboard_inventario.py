@@ -378,6 +378,14 @@ cajas_totales = int(stock_total / 10)  # 10 unidades por caja
 camiones_total = data_detalle['Camion'].sum()
 pallets_total = data_detalle['Pallet'].sum()
 
+# Calcular cajas por producto desde data_detalle (para consistencia)
+data_resumen['Cajas'] = data_resumen.apply(
+    lambda row: int(
+        data_detalle[data_detalle['Producto'] == row['Producto']]['Stock'].sum() / 10
+    ), axis=1
+)
+
+
 # KPI 1: CAJAS (NUEVO)
 with col1:
     st.markdown(f"""
@@ -457,9 +465,9 @@ with col_izq:
     # ===========================
     # NUEVO: Calcular CAJAS por producto
     # ===========================
-    data_resumen_fmt['Cajas'] = (data_resumen_fmt['Stock'] / 10).round(0).astype(int)
-    
-    # Colores temáticos: Verde para Natural, Rojo tomate para Picante
+    data_resumen_fmt['Cajas'] = (data_resumen_fmt['Stock'] / 10).astype(int)  # Sin .round()
+
+        # Colores temáticos: Verde para Natural, Rojo tomate para Picante
     colores_productos = {
         'JUREL FIL NATURAL PRINCES 125G EU': '#00D9A3',     # Verde agua brillante
         'JUREL FIL TOM PICANTE PRINCES 125G EU': '#FF4757'  # Rojo tomate
@@ -492,13 +500,12 @@ with col_izq:
         pull=[0.05, 0.05]  # Separar ligeramente las secciones
     )])
     
-    # ===========================
-    # ===========================
+        # ===========================
     # Texto central: SOLO número
     # ===========================
     total_cajas = data_resumen_fmt['Cajas'].sum()
     fig_pastel.add_annotation(
-        text=f"<b>{total_cajas:,}</b>",
+        text=f"<b>{cajas_totales:,}</b>",
         x=0.5, y=0.5,
         font=dict(size=28, color='#06D6A0', family="Arial Black"),
         showarrow=False
@@ -834,7 +841,7 @@ with col_b:
     """, unsafe_allow_html=True)
 
 with col_c:
-    camiones_top15 = data_fifo_fmt['Camiones_Acumulados'].max()
+    
     st.markdown(f"""
         <div style="
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -872,7 +879,7 @@ with col_c:
                 filter: drop-shadow(0 4px 15px rgba(8, 145, 178, 0.4));
                 line-height: 1;
             ">
-                {camiones_top15:.2f}
+                {camiones_total:.2f}
             </p>
         </div>
     """, unsafe_allow_html=True)
