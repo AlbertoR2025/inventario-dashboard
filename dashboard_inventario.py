@@ -277,29 +277,87 @@ data_detalle, data_resumen, data_fifo = cargar_datos()
 
 # ===========================
 # ===========================
-# BANNER PREMIUM OSCURO MEJORADO
+# BANNER PREMIUM CON IMAGEN Y PESCADO DESTACADO
 # ===========================
-st.markdown("""
+import base64
+from pathlib import Path
+
+def get_base64_image(image_path):
+    with open(image_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
+
+image_path = "Orizon.png"
+
+if Path(image_path).exists():
+    img_base64 = get_base64_image(image_path)
+    background_image = f"url(data:image/png;base64,{img_base64}),"
+else:
+    background_image = ""
+
+st.markdown(f"""
+    <style>
+        .banner {{
+            background: 
+                {background_image}
+                linear-gradient(135deg, rgba(6, 214, 160, 0.15) 0%, rgba(8, 145, 178, 0.1) 100%);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }}
+        
+        .banner h1 {{
+            text-shadow: 
+                0 0 30px rgba(0, 0, 0, 0.95),
+                0 0 20px rgba(0, 0, 0, 0.9),
+                0 4px 15px rgba(0, 0, 0, 0.8),
+                0 2px 8px rgba(0, 0, 0, 0.7),
+                0 0 50px rgba(6, 214, 160, 0.6) !important;
+            -webkit-text-stroke: 1px rgba(0, 0, 0, 0.5);
+        }}
+        
+        .fish-emoji {{
+            font-size: 4rem;
+            display: inline-block;
+            filter: 
+                drop-shadow(0 0 20px rgba(0, 0, 0, 1))
+                drop-shadow(0 0 15px rgba(0, 0, 0, 0.9))
+                drop-shadow(0 5px 10px rgba(0, 0, 0, 0.8))
+                drop-shadow(0 0 30px rgba(255, 255, 255, 0.3));
+            margin-right: 1rem;
+        }}
+    </style>
+    
     <div class="banner">
-        <h1>🐟 Dashboard de Inventario</h1>
+        <h1>
+            <span class="fish-emoji">🐟</span>
+            Dashboard de Inventario
+        </h1>
         <p style="
             font-size: 1.15rem; 
-            font-weight: 400; 
+            font-weight: 500; 
             margin: 0.8rem 0 0.3rem 0;
             text-shadow: 
-                0 4px 10px rgba(0,0,0,0.6),
-                0 2px 5px rgba(0,0,0,0.4);
+                0 0 20px rgba(0, 0, 0, 0.95),
+                0 0 15px rgba(0, 0, 0, 0.9),
+                0 4px 12px rgba(0, 0, 0, 0.8),
+                0 2px 6px rgba(0, 0, 0, 0.7);
             letter-spacing: 1.5px;
+            -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.4);
+            color: #ffffff;
         ">
             <b>ORIZON</b> - Planta Coronel
         </p>
         <p style="
             font-size: 1.1rem; 
-            font-weight: 300; 
+            font-weight: 400; 
             margin: 0;
             text-shadow: 
-                0 3px 8px rgba(0,0,0,0.5),
-                0 2px 4px rgba(0,0,0,0.3);
+                0 0 20px rgba(0, 0, 0, 0.95),
+                0 0 15px rgba(0, 0, 0, 0.9),
+                0 3px 10px rgba(0, 0, 0, 0.8),
+                0 2px 5px rgba(0, 0, 0, 0.7);
+            -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.4);
+            color: #e0e0e0;
         ">
             Producto Terminado | Centro P109 - Almacén I93
         </p>
@@ -307,31 +365,51 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
+
 # ===========================
-# KPIs OSCUROS
+# ===========================
+# KPIs PRINCIPALES
 # ===========================
 col1, col2, col3, col4 = st.columns(4)
 
+# Calcular métricas
 stock_total = data_detalle['Stock'].sum()
+cajas_totales = int(stock_total / 10)  # 10 unidades por caja
 camiones_total = data_detalle['Camion'].sum()
 pallets_total = data_detalle['Pallet'].sum()
-antiguedad_promedio = data_detalle['Dias'].mean()
 
+# KPI 1: CAJAS (NUEVO)
 with col1:
     st.markdown(f"""
         <div class="metric-card">
             <div class="metric-label">
                 <span style="font-size: 2rem;">📦</span>
-                STOCK TOTAL
+                STOCK TOTAL CAJAS
             </div>
-            <div class="big-number">{stock_total:,}</div>
+            <div class="big-number">{cajas_totales:,}</div>
             <div class="metric-delta">
-                ▲ Unidades disponibles
+                ▲ {stock_total:,} unidades
             </div>
         </div>
     """, unsafe_allow_html=True)
 
+# KPI 2: STOCK (emoji cambiado a lata)
 with col2:
+    st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-label">
+                <span style="font-size: 2rem;">🥫</span>
+                STOCK TOTAL UND
+            </div>
+            <div class="big-number">{stock_total:,}</div>
+            <div class="metric-delta">
+                ▲ Jurel en conserva
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+# KPI 3: CAMIONES (sin cambios)
+with col3:
     st.markdown(f"""
         <div class="metric-card">
             <div class="metric-label">
@@ -345,38 +423,25 @@ with col2:
         </div>
     """, unsafe_allow_html=True)
 
-with col3:
-    st.markdown(f"""
-        <div class="metric-card">
-            <div class="metric-label">
-                <span style="font-size: 2rem;">📊</span>
-                TOTAL PALLETS
-            </div>
-            <div class="big-number">{pallets_total:.2f}</div>
-            <div class="metric-delta">
-                ▲ 4,180 un/pallet
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-
+# KPI 4: PALLETS (sin cambios)
 with col4:
     st.markdown(f"""
         <div class="metric-card">
             <div class="metric-label">
-                <span style="font-size: 2rem;">⏳</span>
-                ANTIGÜEDAD
+                <span style="font-size: 2rem;">📐</span>
+                TOTAL PALLETS
             </div>
-            <div class="big-number">{antiguedad_promedio:.1f}</div>
+            <div class="big-number">{pallets_total:.2f}</div>
             <div class="metric-delta">
-                ⌀ Días promedio
+                ▲ Espacio ocupado
             </div>
         </div>
     """, unsafe_allow_html=True)
 
-st.markdown("<br>", unsafe_allow_html=True)
+st.markdown("<br><br>", unsafe_allow_html=True)
 
 # ===========================
-# ===========================
+
 # GRÁFICOS MEJORADOS CON COLORES TEMÁTICOS
 # ===========================
 st.markdown("## 📊 Análisis de Distribución")
@@ -384,10 +449,15 @@ st.markdown("## 📊 Análisis de Distribución")
 col_izq, col_der = st.columns(2)
 
 with col_izq:
-    st.markdown("### Distribución por Material")
+    st.markdown("### 📦 Distribución por Cajas")
     
     data_resumen_fmt = data_resumen.copy()
     data_resumen_fmt['Material'] = data_resumen_fmt['Material'].astype(str).str.replace(',', '')
+    
+    # ===========================
+    # NUEVO: Calcular CAJAS por producto
+    # ===========================
+    data_resumen_fmt['Cajas'] = (data_resumen_fmt['Stock'] / 10).round(0).astype(int)
     
     # Colores temáticos: Verde para Natural, Rojo tomate para Picante
     colores_productos = {
@@ -397,9 +467,12 @@ with col_izq:
     
     colors = [colores_productos.get(prod, '#06D6A0') for prod in data_resumen_fmt['Producto']]
     
+    # ===========================
+    # CAMBIO: Usar 'Cajas' en lugar de 'Stock'
+    # ===========================
     fig_pastel = go.Figure(data=[go.Pie(
         labels=data_resumen_fmt['Producto'],
-        values=data_resumen_fmt['Stock'],
+        values=data_resumen_fmt['Cajas'],  # ← CAMBIO: ahora muestra CAJAS
         hole=0.55,
         marker=dict(
             colors=colors,
@@ -412,15 +485,22 @@ with col_izq:
             color='white',
             family="Arial Black"
         ),
-        hovertemplate='<b>%{label}</b><br>Stock: %{value:,}<br>Porcentaje: %{percent}<extra></extra>',
+        # ===========================
+        # HOVER mejorado: Muestra Cajas
+        # ===========================
+        hovertemplate='<b>%{label}</b><br>Cajas: %{value:,}<br>Porcentaje: %{percent}<extra></extra>',
         pull=[0.05, 0.05]  # Separar ligeramente las secciones
     )])
     
-    # Añadir texto en el centro
+    # ===========================
+    # ===========================
+    # Texto central: SOLO número
+    # ===========================
+    total_cajas = data_resumen_fmt['Cajas'].sum()
     fig_pastel.add_annotation(
-        text=f"<b>{data_resumen_fmt['Stock'].sum():,}</b><br>unidades",
+        text=f"<b>{total_cajas:,}</b>",
         x=0.5, y=0.5,
-        font=dict(size=22, color='#06D6A0', family="Arial Black"),
+        font=dict(size=28, color='#06D6A0', family="Arial Black"),
         showarrow=False
     )
     
@@ -446,8 +526,9 @@ with col_izq:
     
     st.plotly_chart(fig_pastel, use_container_width=True)
 
+
 with col_der:
-    st.markdown("### Stock por Producto")
+    st.markdown("### 📊 Comparación Visual de Productos")
     
     # Crear gráfico de barras horizontal con gradiente
     fig_barras = go.Figure()
@@ -526,10 +607,7 @@ with col_der:
 # Espacio adicional
 st.markdown("<br>", unsafe_allow_html=True)
 
-# ===========================
-# ===========================
-# ===========================
-# ===========================
+
 # ===========================
 # MINI INSIGHTS - CORREGIDO DEFINITIVAMENTE
 # ===========================
@@ -625,13 +703,18 @@ st.markdown("<br><br>", unsafe_allow_html=True)
 
 
 # ===========================
-# TABLA FIFO OSCURA
+# TABLA FIFO MEJORADA - 50 LOTES + COLUMNA CAJAS
 # ===========================
 st.markdown("## 🚨 Prioridad de Despacho FIFO")
 
-data_fifo_fmt = data_fifo.head(15).copy()
+# Tomar top 50 lotes (en lugar de 15)
+data_fifo_fmt = data_fifo.head(50).copy()
 data_fifo_fmt['Material'] = data_fifo_fmt['Material'].astype(str).str.replace(',', '')
 
+# Agregar columna de CAJAS
+data_fifo_fmt['Cajas'] = (data_fifo_fmt['Stock'] / 10).round(0).astype(int)
+
+# Función para colorear alertas
 def get_color(dias):
     if dias > 10:
         return '🔴'
@@ -642,15 +725,21 @@ def get_color(dias):
 
 data_fifo_fmt['Alerta'] = data_fifo_fmt['Dias'].apply(get_color)
 
+# Columnas a mostrar (con CAJAS nueva)
 columnas_mostrar = ['Alerta', 'Prioridad', 'Material', 'Producto', 'Lote', 
-                    'Fecha_Produccion', 'Dias', 'Stock', 'Stock_Acumulado', 
-                    'Pallet', 'Camiones_Acumulados']
+                    'Fecha_Produccion', 'Dias', 'Stock', 'Cajas', 
+                    'Stock_Acumulado', 'Pallet', 'Camiones_Acumulados']
 
+# Mostrar tabla con más altura para 50 lotes
 st.dataframe(
     data_fifo_fmt[columnas_mostrar],
     use_container_width=True,
-    height=520
+    height=650,  # Aumentado de 520 a 650
+    hide_index=True
 )
+
+st.markdown("<br>", unsafe_allow_html=True)
+
 
 # Resumen FIFO CON SOMBRAS Y FORMATO PREMIUM
 st.markdown("<br>", unsafe_allow_html=True)
@@ -682,7 +771,7 @@ with col_a:
                 letter-spacing: 1.5px;
                 text-shadow: 0 2px 5px rgba(0,0,0,0.5);
             ">
-                🎯 Lotes en Top 15
+                🎯 Lotes en Top 50
             </p>
             <p style="
                 font-size: 3.5rem;
@@ -726,7 +815,7 @@ with col_b:
                 letter-spacing: 1.5px;
                 text-shadow: 0 2px 5px rgba(0,0,0,0.5);
             ">
-                📦 Stock Top 15
+                📦 Stock Top 50
             </p>
             <p style="
                 font-size: 3rem;
@@ -791,20 +880,48 @@ with col_c:
 st.markdown("<br>", unsafe_allow_html=True)
 
 # ===========================
-# INFORMACIÓN Y DESCARGA
 # ===========================
-with st.expander("ℹ️ Información del Sistema"):
+# INFORMACIÓN DEL SISTEMA - TÍTULO PREMIUM
+# ===========================
+st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, rgba(8, 145, 178, 0.2) 0%, rgba(6, 214, 160, 0.15) 100%);
+        border-left: 5px solid #06D6A0;
+        border-radius: 12px;
+        padding: 0.8rem 1.5rem;
+        margin: 1.5rem 0 1rem 0;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    ">
+        <h3 style="
+            color: #06D6A0;
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 8px rgba(6, 214, 160, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        ">
+            <span style="font-size: 1.1rem;">📘</span>
+            INFORMACIÓN DEL SISTEMA
+        </h3>
+    </div>
+""", unsafe_allow_html=True)
+
+with st.expander("Ver detalles del sistema", expanded=False):
     st.markdown("""
-    **Sistema de Gestión de Inventario**
-    
-    - **FIFO**: Primero en Entrar, Primero en Salir
-    - **Capacidad por Camión**: 20 pallets (83,600 unidades)
-    - **Unidades por Pallet**: 4,180 unidades
-    
-    **Alertas de Antigüedad:**
-    - 🔴 Más de 10 días (Urgente - Despachar YA)
-    - 🟡 5-10 días (Prioridad Media)
-    - 🟢 Menos de 5 días (Reciente)
+        ### Sistema de Gestión de Inventario
+        
+        - **FIFO:** Primero en Entrar, Primero en Salir
+        - **Capacidad por Camión:** 20 pallets 
+        - **Unidades por Pallet:** 4,180 unidades
+        
+        ### Alertas de Antigüedad:
+        
+        - 🔴 **Más de 10 días** (Urgente - Despachar YA)
+        - 🟡 **5-10 días** (Prioridad Media)
+        - 🟢 **Menos de 5 días** (Reciente)
     """)
 
 csv = data_fifo_fmt.to_csv(index=False).encode('utf-8-sig')
