@@ -1,0 +1,198 @@
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+
+# ===========================
+# CONFIGURACIÓN DE PÁGINA
+# ===========================
+st.set_page_config(
+    page_title="Dashboard Inventario - Pesca Industrial",
+    page_icon="🐟",
+    layout="wide"
+)
+
+# ===========================
+# CARGAR DATOS
+# ===========================
+@st.cache_data
+def cargar_datos():
+    data_detalle = pd.read_csv('inventario_detalle.csv')
+    data_resumen = pd.read_csv('inventario_resumen.csv')
+    data_fifo = pd.read_csv('inventario_fifo.csv')
+    return data_detalle, data_resumen, data_fifo
+
+# Cargar los datos
+data_detalle, data_resumen, data_fifo = cargar_datos()
+
+# ===========================
+# TÍTULO PRINCIPAL
+# ===========================
+st.title("🐟 Dashboard de Inventario - Producto Terminado")
+st.markdown("### Centro P109 | Almacén 193")
+st.markdown("---")
+
+# ===========================
+# FILA 1: KPIs EN TARJETAS
+# ===========================
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    stock_total = data_detalle['Stock'].sum()
+    st.metric(
+        label="📦 Stock Total",
+        value=f"{stock_total:,}",
+        delta="Unidades"
+    )
+
+with col2:
+    camiones_total = data_detalle['Camion'].sum()
+    st.metric(
+        label="🚛 Camiones Disponibles",
+        value=f"{camiones_total:.2f}",
+        delta="Capacidad"
+    )
+
+with col3:
+    pallets_total = data_detalle['Pallet'].sum()
+    st.metric(
+        label="📊 Total Pallets",
+        value=f"{pallets_total:.2f}",
+        delta="4,180 un/pallet"
+    )
+
+with col4:
+    antiguedad_promedio = data_detalle['Dias'].mean()
+    st.metric(
+        label="⏳ Antigüedad Promedio",
+        value=f"{antiguedad_promedio:.1f}",
+        delta="Días"
+    )
+
+st.markdown("---")
+
+# ===========================
+# FILA 2: GRÁFICOS
+# ===========================
+col_izq, col_der = st.columns(2)
+
+with col_izq:
+    st.subheader("📊 Distribución de Stock por Material")
+    
+    # Gráfico de pastel con Plotly
+    fig_pastel = px.pie(
+        data_resumen,
+        names='Producto',
+        values='Stock',
+        title='Proporción de Stock por Producto',
+        hole=0.4,
+        color_discrete_sequence=px.colors.sequential.Blues_r
+    )
+    
+    fig_pastel.update_traces(
+        textposition='inside',
+        textinfo='percent+label'
+    )
+    
+    st.plotly_chart(fig_pastel, use_container_width=True)
+
+with col_der:
+    st.subheader("📈 Stock por Producto")
+    
+    # Gráfico de barras con Plotly
+    fig_barras = px.bar(
+        data_resumen,
+        x='Producto',
+        y='Stock',
+        title='Unidades Disponibles por Producto',
+        color='Stock',
+        color_continuous_scale='Blues',
+        text='Stock'
+    )
+    
+    fig_barras.update_traces(
+        texttemplate='%{text:,.0f}',
+        textposition='outside'
+    )
+    
+    fig_barras.update_layout(
+        xaxis_title="Producto",
+        yaxis_title="Stock (Unidades)",
+        showlegend=False
+    )
+    
+    st.plotly_chart(fig_barras, use_container_width=True)
+
+st.markdown("---")
+
+# ===========================
+# FILA 3: VISTA FIFO TOP 15
+# ===========================
+st.subheader("🚨 Prioridad de Despacho FIFO - Top 15 Lotes")
+
+# Mostrar top 15
+data_fifo_top15 = data_fifo.head(15).copy()
+
+# Crear columna de color según días
+def get_color(dias):
+    if dias > 10:
+        return '🔴'
+    elif dias > 5:
+        return '🟡'
+    else:
+        return '🟢'
+
+data_fifo_top15['Alerta'] = data_fifo_top15['Dias'].apply(get_color)
+
+# Reordenar columnas para mostrar alerta primero
+columnas_mostrar = ['Alerta', 'Prioridad', 'Material', 'Producto', 'Lote', 
+                    'Fecha_Produccion', 'Dias', 'Stock', 'Stock_Acumulado', 
+                    'Pallet', 'Camiones_Acumulados']
+
+st.dataframe(
+    data_fifo_top15[columnas_mostrar],
+    use_container_width=True,
+    height=500
+)
+
+# Resumen FIFO
+col_a, col_b, col_c = st.columns(3)
+
+with col_a:
+    st.metric("🎯 Lotes en Top 15", len(data_fifo_top15))
+
+with col_b:
+    stock_top15 = data_fifo_top15['Stock'].sum()
+    st.metric("📦 Stock Top 15", f"{stock_top15:,}")
+
+with col_c:
+    camiones_top15 = data_fifo_top15['Camiones_Acumulados'].max()
+    st.metric("🚛 Camiones (Acum.)", f"{camiones_top15:.2f}")
+
+st.markdown("---")
+
+# ===========================
+# INFORMACIÓN ADICIONAL
+# ===========================
+with st.expander("ℹ️ Información del Sistema"):
+    st.write("""
+    **Dashboard de Gestión de Inventario - Pesca Industrial**
+    
+    - **FIFO**: Primero en Entrar, Primero en Salir
+    - **Capacidad por Camión**: 20 pallets (83,600 unidades)
+    - **Unidades por Pallet**: 4,180 unidades
+    - **Alertas de Antigüedad**:
+      - 🔴 Más de 10 días (Urgente)
+      - 🟡 5-10 días (Medio)
+      - 🟢 Menos de 5 días (Reciente)
+    """)
+
+# Botón de descarga
+st.markdown("---")
+csv = data_fifo_top15.to_csv(index=False).encode('utf-8-sig')
+st.download_button(
+    label="📥 Descargar Plan de Despacho (CSV)",
+    data=csv,
+    file_name='plan_despacho_fifo.csv',
+    mime='text/csv'
+)
