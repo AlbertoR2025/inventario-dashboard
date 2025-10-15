@@ -294,77 +294,53 @@ if Path(image_path).exists():
 else:
     background_image = ""
 
-st.markdown(f"""
+st.markdown("""
     <style>
-        .banner {{
-            background: 
-                {background_image}
-                linear-gradient(135deg, rgba(6, 214, 160, 0.15) 0%, rgba(8, 145, 178, 0.1) 100%);
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }}
-        
-        .banner h1 {{
-            text-shadow: 
-                0 0 30px rgba(0, 0, 0, 0.95),
-                0 0 20px rgba(0, 0, 0, 0.9),
-                0 4px 15px rgba(0, 0, 0, 0.8),
-                0 2px 8px rgba(0, 0, 0, 0.7),
-                0 0 50px rgba(6, 214, 160, 0.6) !important;
-            -webkit-text-stroke: 1px rgba(0, 0, 0, 0.5);
-        }}
-        
-        .fish-emoji {{
-            font-size: 4rem;
-            display: inline-block;
-            filter: 
-                drop-shadow(0 0 20px rgba(0, 0, 0, 1))
-                drop-shadow(0 0 15px rgba(0, 0, 0, 0.9))
-                drop-shadow(0 5px 10px rgba(0, 0, 0, 0.8))
-                drop-shadow(0 0 30px rgba(255, 255, 255, 0.3));
-            margin-right: 1rem;
-        }}
+    .banner {
+        background: linear-gradient(135deg, #005f73 0%, #0a9396 100%);
+        padding: 2.5rem;
+        border-radius: 16px;
+        text-align: center;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .banner h1 {
+        font-size: 3rem;
+        color: #fff;
+        font-weight: 800;
+        text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        margin: 0;
+        letter-spacing: 2px;
+    }
+    .banner p {
+        font-size: 1.2rem;
+        color: rgba(255,255,255,0.9);
+        margin-top: 0.5rem;
+        letter-spacing: 1px;
+    }
+    .banner::after {
+        content: '';
+        position: absolute;
+        top: -30%;
+        left: -30%;
+        width: 160%;
+        height: 160%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 25s linear infinite;
+    }
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
     </style>
-    
+
     <div class="banner">
-        <h1>
-            <span class="fish-emoji">🐟</span>
-            Dashboard de Inventario
-        </h1>
-        <p style="
-            font-size: 1.15rem; 
-            font-weight: 500; 
-            margin: 0.8rem 0 0.3rem 0;
-            text-shadow: 
-                0 0 20px rgba(0, 0, 0, 0.95),
-                0 0 15px rgba(0, 0, 0, 0.9),
-                0 4px 12px rgba(0, 0, 0, 0.8),
-                0 2px 6px rgba(0, 0, 0, 0.7);
-            letter-spacing: 1.5px;
-            -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.4);
-            color: #ffffff;
-        ">
-            <b>ORIZON</b> - Planta Coronel
-        </p>
-        <p style="
-            font-size: 1.1rem; 
-            font-weight: 400; 
-            margin: 0;
-            text-shadow: 
-                0 0 20px rgba(0, 0, 0, 0.95),
-                0 0 15px rgba(0, 0, 0, 0.9),
-                0 3px 10px rgba(0, 0, 0, 0.8),
-                0 2px 5px rgba(0, 0, 0, 0.7);
-            -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.4);
-            color: #e0e0e0;
-        ">
-            Producto Terminado | Centro P109 - Almacén I93
-        </p>
+        <h1>🏭 Dashboard PT Coronel</h1>
+        <p>Control de Inventario · SAP · Análisis en Tiempo Real</p>
     </div>
 """, unsafe_allow_html=True)
-
-
 
 # ===========================
 # ===========================
